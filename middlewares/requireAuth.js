@@ -8,7 +8,6 @@ module.exports = async function requireAuth(req, res, next) {
   let user = await User.findOne({ spotifyId: spotifyUserId });
   if (!user) return res.status(401).send('Utilisateur inconnu');
 
-  // Rafraîchit le token si expiré
   if (user.expiresAt < new Date()) {
     try {
       const tokenRes = await axios.post('https://accounts.spotify.com/api/token', null, {

@@ -4,7 +4,6 @@ const requireAuth = require('../middlewares/requireAuth');
 
 const router = express.Router();
 
-// Endpoint sécurisé pour récupérer les infos Spotify de l'utilisateur
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const spotifyRes = await axios.get('https://api.spotify.com/v1/me', {

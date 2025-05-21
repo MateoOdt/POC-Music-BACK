@@ -4,7 +4,6 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// Redirection vers Spotify
 router.get('/login', (req, res) => {
   const scope = 'user-read-private user-read-email';
   const redirectUri = 'https://accounts.spotify.com/authorize' +
@@ -15,13 +14,11 @@ router.get('/login', (req, res) => {
   res.redirect(redirectUri);
 });
 
-// Callback Spotify
 router.get('/callback', async (req, res) => {
   const code = req.query.code || null;
   if (!code) return res.status(400).send('Code manquant');
 
   try {
-    // Échange du code contre les tokens
     const tokenRes = await axios.post('https://accounts.spotify.com/api/token', null, {
       params: {
         code,
@@ -38,14 +35,12 @@ router.get('/callback', async (req, res) => {
 
     const { access_token, refresh_token, expires_in } = tokenRes.data;
 
-    // Récupère l'utilisateur Spotify
     const userRes = await axios.get('https://api.spotify.com/v1/me', {
       headers: { 'Authorization': 'Bearer ' + access_token }
     });
 
     const spotifyId = userRes.data.id;
 
-    // Stocke ou met à jour l'utilisateur
     const expiresAt = new Date(Date.now() + expires_in * 1000);
     await User.findOneAndUpdate(
       { spotifyId },
@@ -53,8 +48,7 @@ router.get('/callback', async (req, res) => {
       { upsert: true, new: true }
     );
 
-    // Stocke l'ID utilisateur dans un cookie sécurisé
-    res.cookie('spotify_user_id', spotifyId, { httpOnly: true, secure: false }); // mettre secure: true en prod
+    res.cookie('spotify_user_id', spotifyId, { httpOnly: true, secure: false });
     res.send('Authentification réussie ! Tu peux fermer cette fenêtre.');
   } catch (err) {
     console.error(err);
